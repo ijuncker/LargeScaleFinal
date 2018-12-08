@@ -76,7 +76,7 @@ This function will return the message ids of the scalica messages from a query
 @param query: String, search query
 @param word_col: the Word collection in mlab
 @param message_col: the Message collection in mlab
-@return: list of Message ids
+@return: set of Message ids
 '''
 def search_get_message_ids(query, word_col, message_col):
     ids = set()
