@@ -7,6 +7,7 @@
 import pymongo
 from datetime import datetime
 import tokenizeMsg
+import re
 
 #connecting to database, can ignore
 connection = pymongo.MongoClient("ds127644.mlab.com", 27644)
@@ -34,8 +35,9 @@ The resulting updated data would look like:
     "indexed": [[0, [2, 11, 21]], [1, [4, 15]]]
 }
 
-message: JSON or dict data type
-word_col: the Word collection in mlab
+@param message: JSON or dict data type
+@param word_col: the Word collection in mlab
+@return return: None
 '''
 def serialize_message_to_word(message, word_col):
     m_id = message["message_id"]
@@ -58,12 +60,31 @@ def serialize_message_to_word(message, word_col):
             }
             word_col.insert_one(to_insert)
 
-message = {
-    "message_id": message_col.estimated_document_count(),
-    "username": "test",
-    "content": "This is a message test posted by a @test who is a user on Scalica Scalica is good",
-    "post_date": datetime.now()
-}
+# message = {
+#     "message_id": message_col.estimated_document_count(),
+#     "username": "test",
+#     "content": "This is a post on Twitter, I mean Scalica",
+#     "post_date": datetime.now()
+# }
 
-message_col.insert_one(message)
-serialize_message_to_word(message, word_col)
+# message_col.insert_one(message)
+# serialize_message_to_word(message, word_col)
+
+'''
+This function will return the message ids of the scalica messages from a query
+
+@param query: String, search query
+@param word_col: the Word collection in mlab
+@param message_col: the Message collection in mlab
+@return: list of Message ids
+'''
+def search_get_message_ids(query, word_col, message_col):
+    ids = set()
+    cursor = word_col.find({"word" : {"$in" : re.findall(r"[a-zA-Z_]+", query)}})
+    for word in cursor:
+        indexes = word["indexed"]
+        for index in indexes:
+            ids.add(index[0])
+    return ids
+
+print(search_get_message_ids("Scalica is tight", word_col, message_col))
