@@ -6,7 +6,6 @@
 
 import pymongo
 from datetime import datetime
-import tokenizeMsg
 
 #connecting to database, can ignore
 connection = pymongo.MongoClient("ds127644.mlab.com", 27644)
