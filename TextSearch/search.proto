@@ -12,18 +12,21 @@ service TextSearch{
 }
 
 message MessageRequest{
-
+    int64 scalicaID =1;
+    string username=2;
+    string message=3;
+    string datePosted=4;
 }
 
 message MessageReply{
-
+    //??????
+    string code =  1;
 }
 
 message SearchRequest{
-
+    string query = 1;
 }
 
 message SearchReply{
-
-    
+    string ids =1;
 }
