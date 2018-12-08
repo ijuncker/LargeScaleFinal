@@ -1,0 +1,29 @@
+//start for the GRPC proto file
+
+syntax="proto3";
+
+package TextSearch;
+
+service TextSearch{
+
+    rpc getMessage(MessageRequest) returns (MessageReply);
+
+    rpc Search(SearchRequest) returns (SearchReply);
+}
+
+message MessageRequest{
+
+}
+
+message MessageReply{
+
+}
+
+message SearchRequest{
+
+}
+
+message SearchReply{
+
+    
+}
