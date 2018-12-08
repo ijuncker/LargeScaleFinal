@@ -7,23 +7,15 @@ package TextSearch;
 service TextSearch{
 
     rpc getMessage(MessageRequest) returns (MessageReply);
-
-    rpc Search(SearchRequest) returns (SearchReply);
 }
 
 message MessageRequest{
-
+    string username=1;
+    string message=2;
+    string datePosted=3;
 }
 
 message MessageReply{
-
-}
-
-message SearchRequest{
-
-}
-
-message SearchReply{
-
-    
+    //??????
+    string code =  1;
 }
