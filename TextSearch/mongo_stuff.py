@@ -87,4 +87,9 @@ def search_get_message_ids(query, word_col, message_col):
             ids.add(index[0])
     return ids
 
+'''
+    cursor = message_col.find( {"message_id" : {"$in" : set}})
+    for m in cursor:
+        m['content']
+'''
 print(search_get_message_ids("Scalica is tight", word_col, message_col))
