@@ -6,6 +6,7 @@
 
 import pymongo
 from datetime import datetime
+import tokenizeMsg
 
 #connecting to database, can ignore
 connection = pymongo.MongoClient("ds127644.mlab.com", 27644)
@@ -37,25 +38,8 @@ message: JSON or dict data type
 word_col: the Word collection in mlab
 '''
 def serialize_message_to_word(message, word_col):
-    content = message["content"]
     m_id = message["message_id"]
-    '''
-    TODO: Replace split() with nltk tokenizing
-    '''
-    message_split = content.split(" ")
-    word_table = {}
-
-    '''
-    Loop that inserts all words into a table that holds index information
-    TODO: after replacing split(), account for position changes
-    '''
-    for i in range(len(message_split)):
-        word_name = str.lower(message_split[i])
-        if word_name in word_table:
-            word_table[word_name][1].append(i)
-        else:
-            word_table[word_name] = [m_id, [i]]
-    
+    word_table = tokenizeMsg.tokenizeMsg(message["content"])[1]
     '''
     With the resulting table, update the respective words in the collection with
     the new indexes
@@ -70,13 +54,10 @@ def serialize_message_to_word(message, word_col):
         else:
             to_insert = {
                 "word": word,
-                "indexed": [word_table[word]]
+                "indexed": [[m_id, word_table[word]]]
             }
             word_col.insert_one(to_insert)
 
-
-'''
-Code runner
 message = {
     "message_id": message_col.estimated_document_count(),
     "username": "test",
@@ -86,4 +67,3 @@ message = {
 
 message_col.insert_one(message)
 serialize_message_to_word(message, word_col)
-'''
