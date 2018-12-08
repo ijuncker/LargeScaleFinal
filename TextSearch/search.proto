@@ -7,26 +7,15 @@ package TextSearch;
 service TextSearch{
 
     rpc getMessage(MessageRequest) returns (MessageReply);
-
-    rpc Search(SearchRequest) returns (SearchReply);
 }
 
 message MessageRequest{
-    int64 scalicaID =1;
-    string username=2;
-    string message=3;
-    string datePosted=4;
+    string username=1;
+    string message=2;
+    string datePosted=3;
 }
 
 message MessageReply{
     //??????
     string code =  1;
-}
-
-message SearchRequest{
-    string query = 1;
-}
-
-message SearchReply{
-    string ids =1;
 }
