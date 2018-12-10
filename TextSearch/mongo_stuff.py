@@ -168,6 +168,3 @@ def sorted_messages(mess_list_in, query_in, message_col, word_col):
     
     return message
     
-
-# message_sort([], "Scalica Twitter", message_col, word_col)
-
