@@ -1,27 +1,39 @@
 import nltk
 import re
 
-def tokenizeMsg(initial_message):
-    regexString= re.sub("[^a-zA-Z0-9#@ ]+",'', initial_message)
+def tokenizeSearch(initial_search):
+    regexString= re.sub("[^a-zA-Z0-9#@ ]+",'', initial_search).lower()
     regexTokens = nltk.TweetTokenizer().tokenize(regexString)
 
     stop_words = set(nltk.corpus.stopwords.words('english'))
 
-    withoutStop = []
-
+    allStop = True
     for word in regexTokens:
-        if word.lower() not in stop_words and word not in ():
-            withoutStop.append(word)
+        if word not in stop_words:
+            allStop = False
+
+    if allStop == False:
+        withoutStop = []
+        for word in regexTokens:
+            if word not in stop_words and word not in ():
+                withoutStop.append(word)
+        return withoutStop
+    else:
+        return regexTokens
+
+def tokenizeMsg(initial_message):
+    regexString= re.sub("[^a-zA-Z0-9#@ ]+",'', initial_message).lower()
+    regexTokens = nltk.TweetTokenizer().tokenize(regexString)
 
     index = {}
-    for x in range(len(withoutStop)):
-        if withoutStop[x].lower() in index:
-            index[withoutStop[x].lower()].append(x)
+    for x in range(len(regexTokens)):
+        if regexTokens[x] in index:
+            index[regexTokens[x]].append(x)
         else:
-            index[withoutStop[x]] = [x]
-    return (withoutStop, index)
-
-
+            index[regexTokens[x]] = [x]
+    return index
+    
 if __name__ == "__main__":
-    print(tokenizeMsg("@Jimmy that's party was awesome #party. What were they doing. We jumped and were running. Awesome party:;<>,?}{?}"))
-
+    print(tokenizeMsg("yo @Jimmy that was an awesome concert last night. The band put on an awesome show. #Awesome night:;<>,?}{?}"))
+    print(tokenizeSearch("last night was a crazy night my bro"))
+    print(tokenizeSearch("that was an"))
