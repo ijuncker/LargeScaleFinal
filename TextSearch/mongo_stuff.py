@@ -41,7 +41,7 @@ The resulting updated data would look like:
 '''
 def serialize_message_to_word(message, word_col):
     m_id = message["message_id"]
-    word_table = tokenizeMsg.tokenizeMsg(message["content"])[1]
+    word_table = tokenizeMsg.tokenizeMsg(message["content"])
     '''
     With the resulting table, update the respective words in the collection with
     the new indexes
@@ -66,15 +66,15 @@ def serialize_message_to_word(message, word_col):
             }
             word_col.insert_one(to_insert)
 
-# message = {
-#     "message_id": message_col.count_documents({}),
-#     "username": "test",
-#     "content": "This is a post on Twitter, I mean Scalica",
-#     "post_date": datetime.now()
-# }
+message = {
+    "message_id": message_col.count_documents({}),
+    "username": "test",
+    "content": "This is a post on Twitter, I mean Scalica",
+    "post_date": datetime.now()
+}
 
-# message_col.insert_one(message)
-# serialize_message_to_word(message, word_col)
+message_col.insert_one(message)
+serialize_message_to_word(message, word_col)
 
 '''
 This function will return the message ids of the scalica messages from a query
@@ -87,7 +87,7 @@ def search_get_message_ids(query, word_col):
     ids = set()
     cursor = word_col.find({
         "word" : {
-            "$in" : re.findall(r"[a-zA-Z_]+", query)
+            "$in" : tokenizeMsg.tokenizeSearch(query)
             }
         })
     for word in cursor:
@@ -127,10 +127,10 @@ def search_get_messages_from_ids(ids, word_col, message_col):
 ########################## SCORING STUFF ########################
 def get_tf_idf(mess_in, word_in):
     # Split message into lists of words. 
-    mess_list = re.findall(r"[a-zA-Z_]+", mess_in)
+    mess_list = tokenizeMsg.tokenizeMsg(mess_in)
     
     # Calculate tf = term frequency = (# times word occurs in message) / (# words in message).
-    tf = mess_list.count(word_in / len(mess_list)
+    tf = mess_list.count(word_in / len(mess_list))
     
     # Calculate idf = inverse document frequency = (# messages / # messages containing word).
     # mess_count -> from message_sort()
