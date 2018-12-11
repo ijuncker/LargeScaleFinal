@@ -2,9 +2,8 @@ import nltk
 import re
 
 def tokenizeSearch(initial_search):
-    regexString= re.sub("[^a-zA-Z0-9#@ ]+",'', initial_search).lower()
-    regexTokens = nltk.TweetTokenizer().tokenize(regexString)
-
+    print("running")
+    regexTokens= re.sub("[^a-zA-Z0-9#@ ]+",'', initial_search).lower().split()
     stop_words = set(nltk.corpus.stopwords.words('english'))
 
     allStop = True
@@ -15,7 +14,7 @@ def tokenizeSearch(initial_search):
     if allStop == False:
         withoutStop = []
         for word in regexTokens:
-            if word not in stop_words and word not in ():
+            if word not in stop_words:
                 withoutStop.append(word)
         return withoutStop
     else:
@@ -24,7 +23,6 @@ def tokenizeSearch(initial_search):
 def tokenizeMsg(initial_message):
     regexTokens= re.sub("[^a-zA-Z0-9#@ ]+",'', initial_message).lower().split()
     # regexTokens = nltk.TweetTokenizer().tokenize(regexString)
-    print(regexTokens)
     index = {}
     for x in range(len(regexTokens)):
         if regexTokens[x] in index:

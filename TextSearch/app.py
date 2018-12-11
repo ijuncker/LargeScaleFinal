@@ -14,5 +14,4 @@ def search():
     search_query = request.args.get("query")
     messages = mongo_stuff.search_get_messages(search_query)
     sorted_messages = mongo_stuff.sorted_messages(messages, search_query)
-    print(sorted_messages)
     return render_template("search.html", message_list = sorted_messages)

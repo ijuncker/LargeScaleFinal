@@ -42,7 +42,6 @@ The resulting updated data would look like:
 '''
 def serialize_message_to_word(message):
     m_id = message["message_id"]
-    print(m_id)
     word_table = tokenizeMsg.tokenizeMsg(message["content"])
     '''
     With the resulting table, update the respective words in the collection with
@@ -156,7 +155,6 @@ def get_tf_idf(mess_in, word_in, mess_count_in, word_doc_count_in):
 
 def sorted_messages(mess_list_in, query_in):
     mess_score_list = [] # List with (message_id, score)
-    # print(mess_list_in[0]["content"]) # one message
     mess_count = message_col.count_documents({}) # Count of all messages. 
     
     cursor = word_col.find({
@@ -184,4 +182,3 @@ def sorted_messages(mess_list_in, query_in):
     mess_score_list.sort(key=lambda x:x[1])
 
     return mess_score_list
-    
