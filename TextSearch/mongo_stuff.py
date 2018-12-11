@@ -8,6 +8,7 @@ import pymongo
 from datetime import datetime
 import tokenizeMsg
 import re
+import math
 
 #connecting to database, can ignore
 connection = pymongo.MongoClient("ds127644.mlab.com", 27644)
@@ -39,8 +40,9 @@ The resulting updated data would look like:
 @param word_col: the Word collection in mlab
 @return return: None
 '''
-def serialize_message_to_word(message, word_col):
+def serialize_message_to_word(message):
     m_id = message["message_id"]
+    print(m_id)
     word_table = tokenizeMsg.tokenizeMsg(message["content"])
     '''
     With the resulting table, update the respective words in the collection with
@@ -66,15 +68,26 @@ def serialize_message_to_word(message, word_col):
             }
             word_col.insert_one(to_insert)
 
-message = {
-    "message_id": message_col.count_documents({}),
-    "username": "test",
-    "content": "This is a post on Twitter, I mean Scalica",
-    "post_date": datetime.now()
-}
+def insert_message(request):
+    message = {
+        "message_id": message_col.count_documents({}),
+        "username":request.username,
+        "content":request.message,
+        "post_date":request.datePosted
+    }
+    message_col.insert_one(message)
+    return message
 
-message_col.insert_one(message)
-serialize_message_to_word(message, word_col)
+# message = {
+#     "message_id": message_col.count_documents({}),
+#     "username": "test",
+#     "content": "This is a post on Twitter, I mean Scalica",
+#     "datePosted": datetime.now()
+# }
+
+# # message_col.insert_one(message)
+# insert_message(message)
+# serialize_message_to_word(message)
 
 '''
 This function will return the message ids of the scalica messages from a query
@@ -83,7 +96,7 @@ This function will return the message ids of the scalica messages from a query
 @param word_col: the Word collection in mlab
 @return: set of Message ids
 '''
-def search_get_message_ids(query, word_col):
+def search_get_message_ids(query):
     ids = set()
     cursor = word_col.find({
         "word" : {
@@ -94,6 +107,7 @@ def search_get_message_ids(query, word_col):
         indexes = word["indexed"]
         for index in indexes:
             ids.add(index[0])
+    
     return ids
 
 '''
@@ -110,8 +124,8 @@ Message{
 @param message_col: Message collection on mlab
 @return: list of messages
 '''
-def search_get_messages_from_ids(ids, word_col, message_col):
-    ids = search_get_message_ids("Scalica test", word_col)
+def search_get_messages(query):
+    ids = search_get_message_ids(query)
     cursor = message_col.find({
         "message_id" : {
             "$in" : list(ids)
@@ -125,38 +139,49 @@ def search_get_messages_from_ids(ids, word_col, message_col):
 
 
 ########################## SCORING STUFF ########################
-def get_tf_idf(mess_in, word_in):
+def get_tf_idf(mess_in, word_in, mess_count_in, word_doc_count_in):
     # Split message into lists of words. 
-    mess_list = tokenizeMsg.tokenizeMsg(mess_in)
-    
+    mess_list = list(tokenizeMsg.tokenizeMsg(mess_in).keys())
     # Calculate tf = term frequency = (# times word occurs in message) / (# words in message).
-    tf = mess_list.count(word_in / len(mess_list))
-    
-    # Calculate idf = inverse document frequency = (# messages / # messages containing word).
+    tf = mess_list.count(word_in) / len(mess_list)
+    # Calculate idf = inverse document frequency = log(# messages / # messages containing word).
     # mess_count -> from message_sort()
     # word_doc_count -> from message_sort()
-    idf = math.log(mess_count / word_doc_count)
-
+    idf = math.log(mess_count_in / word_doc_count_in)
+    
     # Calculate td_idf : (tf * idf)
     tf_idf = tf * idf
     return tf_idf
 
 
-
-def message_sort(mess_list_in, query_in, message_col, word_col):
+def sorted_messages(mess_list_in, query_in):
     mess_score_list = [] # List with (message_id, score)
-    # print(mess_list_in[0]["content"])
-    mess_count = message_col.count_documents({})
-    # for message in message_list_in:
-    cursor = word_col.find({
-        "word" : {
-            "$in" : query_in.split(" ")
-            }
-        })
+    # print(mess_list_in[0]["content"]) # one message
+    mess_count = message_col.count_documents({}) # Count of all messages. 
     
+    cursor = word_col.find({
+            "word" : {
+                "$in" : tokenizeMsg.tokenizeSearch(query_in)
+                }
+            })
+    
+    word_table = []
     for word in cursor:
-        word_doc_count = len(word["indexed"])
-        print(word["word"], word_doc_count)
+        word_table.append(word)
+    
+    # Loop through all messages.
+    for message in mess_list_in:
+        # For each word in the query
+        mess_score = 0
+        for word in word_table:
+            word_doc_count = len(word["indexed"]) # Count of all words
+            mess_score += get_tf_idf(message["content"], word["word"], mess_count, word_doc_count)
+        
+        # Add to mess_score_list
+        mess_score_list.append((message, mess_score))
+    
+    # Sort mess_score_list
+    mess_score_list.sort(key=lambda x:x[1])
 
-# message_sort([], "Scalica Twitter", message_col, word_col)
-
+    return mess_score_list
+    
