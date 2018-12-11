@@ -40,8 +40,9 @@ The resulting updated data would look like:
 @param word_col: the Word collection in mlab
 @return return: None
 '''
-def serialize_message_to_word(message, word_col):
+def serialize_message_to_word(message):
     m_id = message["message_id"]
+    print(m_id)
     word_table = tokenizeMsg.tokenizeMsg(message["content"])
     '''
     With the resulting table, update the respective words in the collection with
@@ -67,7 +68,7 @@ def serialize_message_to_word(message, word_col):
             }
             word_col.insert_one(to_insert)
 
-def insert_message(request){
+def insert_message(request):
     message = {
         "message_id": message_col.count_documents({}),
         "username":request.username,
@@ -75,17 +76,18 @@ def insert_message(request){
         "post_date":request.datePosted
     }
     message_col.insert_one(message)
-}
+    return message
+
 # message = {
 #     "message_id": message_col.count_documents({}),
 #     "username": "test",
 #     "content": "This is a post on Twitter, I mean Scalica",
-#     "post_date": datetime.now()
+#     "datePosted": datetime.now()
 # }
 
-# message_col.insert_one(message)
+# # message_col.insert_one(message)
 # insert_message(message)
-# serialize_message_to_word(message, word_col)
+# serialize_message_to_word(message)
 
 '''
 This function will return the message ids of the scalica messages from a query
@@ -94,7 +96,7 @@ This function will return the message ids of the scalica messages from a query
 @param word_col: the Word collection in mlab
 @return: set of Message ids
 '''
-def search_get_message_ids(query, word_col):
+def search_get_message_ids(query):
     ids = set()
     cursor = word_col.find({
         "word" : {
@@ -122,8 +124,8 @@ Message{
 @param message_col: Message collection on mlab
 @return: list of messages
 '''
-def search_get_messages(query, word_col, message_col):
-    ids = search_get_message_ids(query, word_col)
+def search_get_messages(query):
+    ids = search_get_message_ids(query)
     cursor = message_col.find({
         "message_id" : {
             "$in" : list(ids)
@@ -139,10 +141,10 @@ def search_get_messages(query, word_col, message_col):
 ########################## SCORING STUFF ########################
 def get_tf_idf(mess_in, word_in, mess_count_in, word_doc_count_in):
     # Split message into lists of words. 
-    mess_list = tokenizeMsg.tokenizeMsg(mess_in).keys()
+    mess_list = list(tokenizeMsg.tokenizeMsg(mess_in).keys())
     
     # Calculate tf = term frequency = (# times word occurs in message) / (# words in message).
-    tf = mess_list.count(word_in / len(mess_list))
+    tf = mess_list.count(word_in) / len(mess_list)
     
     # Calculate idf = inverse document frequency = log(# messages / # messages containing word).
     # mess_count -> from message_sort()
@@ -154,27 +156,31 @@ def get_tf_idf(mess_in, word_in, mess_count_in, word_doc_count_in):
     return tf_idf
 
 
-def sorted_messages(mess_list_in, query_in, message_col, word_col):
+def sorted_messages(mess_list_in, query_in):
     mess_score_list = [] # List with (message_id, score)
     # print(mess_list_in[0]["content"]) # one message
     mess_count = message_col.count_documents({}) # Count of all messages. 
     
-    # Loop through all messages.
-    for message in mess_list_in:
-        # Finds all 
-        cursor = word_col.find({
+    cursor = word_col.find({
             "word" : {
                 "$in" : tokenizeMsg.tokenizeSearch(query_in)
                 }
             })
+    
+    word_table = []
+    for word in cursor:
+        word_table.append(word)
+    
+    # Loop through all messages.
+    for message in mess_list_in:
         # For each word in the query
-        for word in cursor:
+        for word in word_table:
             mess_score = 0
             word_doc_count = len(word["indexed"]) # Count of all words
             mess_score += get_tf_idf(message["content"], word, mess_count, word_doc_count)
         
         # Add to mess_score_list
-        mess_score_list.append(message["message_id"], mess_score)
+        mess_score_list.append((message["message_id"], mess_score))
         # Sort mess_score_list
         mess_score_list.sort(key=lambda x:x[1])
 

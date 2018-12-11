@@ -7,6 +7,9 @@ from django.shortcuts import render
 from django.utils import timezone
 from .models import Following, Post, FollowingForm, PostForm, MyUserCreationForm
 
+import grpc
+import search_pb2
+import search_pb2_grpc
 
 # Anonymous views
 #################
@@ -92,7 +95,18 @@ def post(request):
     new_post.user = request.user
     new_post.pub_date = timezone.now()
     new_post.save()
+    print(new_post.text)
+    
     # RPC call to messaging service
+    with grpc.insecure_channel("[::]:50051") as channel:
+      stub = search_pb2_grpc.TextSearchStub(channel)
+      response = stub.getMessage(search_pb2.MessageRequest(
+        username = new_post.user.username,
+        message = new_post.text,
+        datePosted = str(new_post.pub_date)
+      ))
+      print(response)
+    
     return home(request)
   else:
     form = PostForm

@@ -22,9 +22,9 @@ def tokenizeSearch(initial_search):
         return regexTokens
 
 def tokenizeMsg(initial_message):
-    regexString= re.sub("[^a-zA-Z0-9#@ ]+",'', initial_message).lower()
-    regexTokens = nltk.TweetTokenizer().tokenize(regexString)
-
+    regexTokens= re.sub("[^a-zA-Z0-9#@ ]+",'', initial_message).lower().split()
+    # regexTokens = nltk.TweetTokenizer().tokenize(regexString)
+    print(regexTokens)
     index = {}
     for x in range(len(regexTokens)):
         if regexTokens[x] in index:

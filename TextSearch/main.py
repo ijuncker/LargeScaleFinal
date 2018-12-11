@@ -18,9 +18,10 @@ import mongo_stuff
 class TextSearch(search_pb2_grpc.TextSearchServicer):
     def getMessage(self, request, context):
 
-        
-        mongo_stuff.insert_message(request)
-        mongo_stuff.serialize_message_to_word(request.message, mongo_stuff.word_col)    
+        print(request)
+        newMsg = mongo_stuff.insert_message(request)
+        print("Message insert success")
+        mongo_stuff.serialize_message_to_word(newMsg)    
         
         return search_pb2.MessageReply(code='OK')
 
@@ -30,9 +31,13 @@ def serve():
     search_pb2_grpc.add_TextSearchServicer_to_server(TextSearch(), server)
     server.add_insecure_port('[::]:50051')
     server.start()
+    try:
+        print("grpc server running")
+        while True:
+            time.sleep(86400)
+    except KeyboardInterrupt:
+        print("grpc server has stopped")
+        server.stop(0)
 
 if __name__ == '__main__':
     serve()
-
-print(db.list_collection_names())
-

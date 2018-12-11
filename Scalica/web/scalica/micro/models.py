@@ -4,6 +4,10 @@ from django.conf import settings
 from django.db import models
 from django.forms import ModelForm, TextInput
 
+import grpc
+import search_pb2
+import search_pb2_grpc
+
 class Post(models.Model):
   user = models.ForeignKey(settings.AUTH_USER_MODEL)
   text = models.CharField(max_length=256, default="")
