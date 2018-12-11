@@ -67,6 +67,15 @@ def serialize_message_to_word(message, word_col):
             }
             word_col.insert_one(to_insert)
 
+def insert_message(request){
+    message = {
+        "message_id": message_col.count_documents({}),
+        "username":request.username,
+        "content":request.message,
+        "post_date":request.datePosted
+    }
+    message_col.insert_one(message)
+}
 # message = {
 #     "message_id": message_col.count_documents({}),
 #     "username": "test",
@@ -75,6 +84,7 @@ def serialize_message_to_word(message, word_col):
 # }
 
 # message_col.insert_one(message)
+# insert_message(message)
 # serialize_message_to_word(message, word_col)
 
 '''
@@ -112,8 +122,8 @@ Message{
 @param message_col: Message collection on mlab
 @return: list of messages
 '''
-def search_get_messages_from_ids(ids, word_col, message_col):
-    ids = search_get_message_ids("Scalica test", word_col)
+def search_get_messages(query, word_col, message_col):
+    ids = search_get_message_ids(query, word_col)
     cursor = message_col.find({
         "message_id" : {
             "$in" : list(ids)
@@ -134,7 +144,7 @@ def get_tf_idf(mess_in, word_in, mess_count_in, word_doc_count_in):
     # Calculate tf = term frequency = (# times word occurs in message) / (# words in message).
     tf = mess_list.count(word_in / len(mess_list))
     
-    # Calculate idf = inverse document frequency = (# messages / # messages containing word).
+    # Calculate idf = inverse document frequency = log(# messages / # messages containing word).
     # mess_count -> from message_sort()
     # word_doc_count -> from message_sort()
     idf = math.log(mess_count_in / word_doc_count_in)
@@ -165,6 +175,9 @@ def sorted_messages(mess_list_in, query_in, message_col, word_col):
         
         # Add to mess_score_list
         mess_score_list.append(message["message_id"], mess_score)
-    
-    return message
+        # Sort mess_score_list
+        mess_score_list.sort(key=lambda x:x[1])
+
+
+    return mess_score_list
     
