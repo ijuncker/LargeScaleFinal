@@ -1,0 +1,11 @@
+
+<table>
+{% for message in message_list%}
+<tr>
+    <td>{{ message[0]["message_id"] }}</td>
+    <td>{{ message[0]["content"] }}</td>
+    <td>{{ message[0]["username"] }}</td>
+    <td>{{ message[0]["post_date"] }}</td>
+</tr>
+{% endfor %}
+</table>
