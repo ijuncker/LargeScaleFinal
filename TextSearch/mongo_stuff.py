@@ -142,15 +142,13 @@ def search_get_messages(query):
 def get_tf_idf(mess_in, word_in, mess_count_in, word_doc_count_in):
     # Split message into lists of words. 
     mess_list = list(tokenizeMsg.tokenizeMsg(mess_in).keys())
-    
     # Calculate tf = term frequency = (# times word occurs in message) / (# words in message).
     tf = mess_list.count(word_in) / len(mess_list)
-    
     # Calculate idf = inverse document frequency = log(# messages / # messages containing word).
     # mess_count -> from message_sort()
     # word_doc_count -> from message_sort()
     idf = math.log(mess_count_in / word_doc_count_in)
-
+    
     # Calculate td_idf : (tf * idf)
     tf_idf = tf * idf
     return tf_idf
@@ -174,16 +172,16 @@ def sorted_messages(mess_list_in, query_in):
     # Loop through all messages.
     for message in mess_list_in:
         # For each word in the query
+        mess_score = 0
         for word in word_table:
-            mess_score = 0
             word_doc_count = len(word["indexed"]) # Count of all words
-            mess_score += get_tf_idf(message["content"], word, mess_count, word_doc_count)
+            mess_score += get_tf_idf(message["content"], word["word"], mess_count, word_doc_count)
         
         # Add to mess_score_list
-        mess_score_list.append((message["message_id"], mess_score))
-        # Sort mess_score_list
-        mess_score_list.sort(key=lambda x:x[1])
-
+        mess_score_list.append((message, mess_score))
+    
+    # Sort mess_score_list
+    mess_score_list.sort(key=lambda x:x[1])
 
     return mess_score_list
     
