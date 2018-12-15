@@ -98,7 +98,7 @@ def post(request):
     print(new_post.text)
     
     # RPC call to messaging service
-    with grpc.insecure_channel("[::]:50051") as channel:
+    with grpc.insecure_channel("linserv1.cims.nyu.edu:50051") as channel:
       stub = search_pb2_grpc.TextSearchStub(channel)
       response = stub.getMessage(search_pb2.MessageRequest(
         username = new_post.user.username,
