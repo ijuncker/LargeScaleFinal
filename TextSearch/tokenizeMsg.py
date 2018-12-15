@@ -2,7 +2,6 @@ import nltk
 import re
 
 def tokenizeSearch(initial_search):
-    print("running")
     regexTokens= re.sub("[^a-zA-Z0-9#@ ]+",'', initial_search).lower().split()
     stop_words = set(nltk.corpus.stopwords.words('english'))
 
@@ -31,7 +30,4 @@ def tokenizeMsg(initial_message):
             index[regexTokens[x]] = [x]
     return index
     
-if __name__ == "__main__":
-    print(tokenizeMsg("yo @Jimmy that was an awesome concert last night. The band put on an awesome show. #Awesome night:;<>,?}{?}"))
-    print(tokenizeSearch("last night was a crazy night my bro"))
-    print(tokenizeSearch("that was an"))
+

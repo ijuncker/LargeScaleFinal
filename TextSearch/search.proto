@@ -16,6 +16,5 @@ message MessageRequest{
 }
 
 message MessageReply{
-    //??????
     string code =  1;
 }
