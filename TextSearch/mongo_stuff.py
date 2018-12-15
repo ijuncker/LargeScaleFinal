@@ -139,15 +139,17 @@ def search_get_messages(query):
 
 ########################## SCORING STUFF ########################
 def get_tf_idf(mess_in, word_in, mess_count_in, word_doc_count_in):
-    # Split message into lists of words. 
-    mess_list = list(tokenizeMsg.tokenizeMsg(mess_in).keys())
+    # Tokenize message and get length. 
+    mess_dict = tokenizeMsg.tokenizeMsg(mess_in)
+    mess_len = len(mess_in.split(' '))
     # Calculate tf = term frequency = (# times word occurs in message) / (# words in message).
-    tf = mess_list.count(word_in) / len(mess_list)
+    tf =0
+    if word_in in mess_dict.keys():
+        tf = len(mess_dict[word_in]) / mess_len 
     # Calculate idf = inverse document frequency = log(# messages / # messages containing word).
     # mess_count -> from message_sort()
     # word_doc_count -> from message_sort()
     idf = math.log(mess_count_in / word_doc_count_in)
-    
     # Calculate td_idf : (tf * idf)
     tf_idf = tf * idf
     return tf_idf
@@ -182,3 +184,13 @@ def sorted_messages(mess_list_in, query_in):
     mess_score_list.sort(key=lambda x:x[1], reverse=True)
 
     return mess_score_list
+
+
+
+## Testing.
+message_list = search_get_messages('random')
+
+sorted_list = sorted_messages(message_list, 'random')
+
+for mess in sorted_list:
+    print(mess[0]["content"], mess[1])
